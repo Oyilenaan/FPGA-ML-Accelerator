@@ -1,0 +1,10 @@
+# macOS system files
+.DS_Store
+
+# Simulation binaries/outputs
+*.vcd
+sim/testbench
+
+# Vivado/Quartus generated files
+vivado/
+*.log
