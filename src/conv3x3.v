@@ -64,13 +64,14 @@ module conv3x3 #(
 
   // ---- Mux pixel/weight for current step ----
   reg [DATA_WIDTH-1:0] cur_pixel, cur_weight;
-  reg                  mac_valid, mac_flush;
+  reg                  mac_valid, mac_flush, mac_last;
 
   always @(*) begin
     cur_pixel  = px[step];
     cur_weight = wt[step];
     mac_valid  = running;
     mac_flush  = running && (step == 0);
+    mac_last   = running && (step == KERNEL_SIZE - 1);  // flag the final tap
   end
 
   // ---- Instantiate MAC PE ----
@@ -82,6 +83,7 @@ module conv3x3 #(
     .rst_n     (rst_n),
     .flush     (mac_flush),
     .valid_in  (mac_valid),
+    .last_in   (mac_last),
     .pixel     (cur_pixel),
     .weight    (cur_weight),
     .acc_out   (result),

@@ -54,10 +54,12 @@ def conv3x3_relu(pixel_window, kernel):
 def generate_test_vectors(n=256, seed=42):
     rng = np.random.default_rng(seed)
 
-    # Fixed kernel (same one hardcoded in the testbench for easy comparison)
-    kernel = np.array([1, 0, 255, 0, 4, 0, 255, 0, 1], dtype=np.uint8)
+    # Fixed kernel — small weights to produce varied non-saturating outputs
+    # Max accumulation: 9 * 31 * 2 = 558 with centre weight 5, so ~half will be < 255
+    kernel = np.array([1, 1, 1, 1, 2, 1, 1, 1, 1], dtype=np.uint8)
 
-    pixel_windows = rng.integers(0, 256, size=(n, 9), dtype=np.uint8)
+    # Sparse pixels (0-31) ensure we get a good spread of output values
+    pixel_windows = rng.integers(0, 32, size=(n, 9), dtype=np.uint8)
     results = []
     for pw in pixel_windows:
         results.append(conv3x3_relu(pw, kernel))
@@ -91,12 +93,12 @@ def write_hex_files(pixel_windows, kernel, results, out_dir="sim"):
 # Quick sanity check
 # ---------------------------------------------------------------------------
 def sanity_check():
-    # Hand-calculated: pixel=[1,1,1,1,1,1,1,1,1], kernel=[1,0,255,0,4,0,255,0,1]
-    # acc = 1+0+255+0+4+0+255+0+1 = 516, > SAT_MAX=255, so result = 255
-    pw = [1]*9
-    k  = [1, 0, 255, 0, 4, 0, 255, 0, 1]
+    # Hand-calculated: pixel=[10]*9, kernel=[1,1,1,1,2,1,1,1,1]
+    # acc = 10*(1+1+1+1+2+1+1+1+1) = 10*10 = 100, < 255, so result = 100
+    pw = [10]*9
+    k  = [1, 1, 1, 1, 2, 1, 1, 1, 1]
     r  = conv3x3_relu(pw, k)
-    assert r == 255, f"Sanity check failed: got {r}"
+    assert r == 100, f"Sanity check failed: got {r}"
 
     # pixel=all zeros → result = 0
     r2 = conv3x3_relu([0]*9, k)

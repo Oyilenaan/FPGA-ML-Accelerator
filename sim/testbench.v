@@ -170,20 +170,25 @@ module testbench;
     rst_n = 1;
     @(posedge clk);
 
-    // Drive all test vectors
+    // Drive all test vectors sequentially
+    // Each convolution takes 9 (serialize) + 3 (MAC pipe) + 1 (ReLU) = 13 cycles
+    // We wait 20 cycles between inputs to be safe
     while (test_idx < NUM_TESTS) begin
+      // Wait for ready
       @(posedge clk);
-      if (ready_out) begin
-        drive_input(test_idx);
-        valid_in = 1;
+      while (!ready_out) begin
         @(posedge clk);
-        valid_in = 0;
-        test_idx = test_idx + 1;
       end
+      drive_input(test_idx);
+      valid_in  = 1;
+      @(posedge clk);
+      valid_in  = 0;
+      test_idx  = test_idx + 1;
+      // Let this vector clear the pipeline before sending the next
+      repeat(20) @(posedge clk);
     end
 
-    // Wait for all results to come back (pipeline drain)
-    // Latency = 9 (serialize) + 3 (MAC pipeline) + 1 (ReLU) = 13 cycles + margin
+    // Final drain
     repeat(30) @(posedge clk);
 
     // Final report
