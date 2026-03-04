@@ -186,24 +186,6 @@ FPGA-ML-Accelerator/
 
 ---
 
-## CV Bullet Points
-
-```
-FPGA CNN Convolution IP Core                                    Verilog / Python
-• Designed a pipelined 3×3 convolution engine in Verilog targeting Xilinx Artix-7,
-  implementing a 3-stage MAC pipeline (register → multiply → accumulate) for Fmax
-  optimisation.
-• Wrapped core in an AMBA AXI-Stream interface (18-byte slave, 1-byte master) for
-  direct integration with Zynq PS DMA — no glue logic required.
-• Built a two-layer verification suite: Python/NumPy golden model generating 256
-  bit-accurate test vectors, consumed by a self-checking Verilog testbench with
-  automatic pass/fail reporting across 114 unique output values.
-• Used 8-bit fixed-point arithmetic (Q8.0) with a 20-bit accumulator, sized to
-  prevent overflow across all 9-tap inputs (max: 9 × 255² = 585,225 < 2²⁰).
-```
-
----
-
 ## License
 
 MIT — see [LICENSE](LICENSE)
